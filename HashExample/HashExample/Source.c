@@ -13,7 +13,7 @@ struct hash_table* create_new_hash_table();
 int get_hash_code(int value);
 void insert_in_hash_table(struct hash_table* hash_table, int key);
 void show_hash_table(struct hash_table* hash_table);
-struct entry_node* search_key_in_hash_table(struct hash_table* hash_table, int key);
+struct search_result* search_key_in_hash_table(struct hash_table* hash_table, int key);
 
 // type each node of the linked list that stores the entries associated with a bucket position
 //(each bucket position points to a linked list, this simplifies collision handling)
@@ -27,6 +27,13 @@ struct hash_table
 {
 	int size;
 	struct entry_node** bucket;
+};
+
+struct search_result
+{
+	struct entry_node* entry;
+	int bucket_position;
+	int entries_linked_list_position;
 };
 
 int main()
@@ -44,7 +51,7 @@ int main()
 			int new_key;
 			scanf_s("%d", &new_key);
 			clean_keyboard_buffer();
-						
+
 			insert_in_hash_table(hash_table, new_key);
 			break;
 
@@ -58,12 +65,14 @@ int main()
 			scanf_s("%d", &search_key);
 			clean_keyboard_buffer();
 
-			struct entry_node* entry = search_key_in_hash_table(hash_table, search_key);
+			struct search_result* search_result = search_key_in_hash_table(hash_table, search_key);
 
-			if (entry != NULL)
+			if (search_result != NULL)
 			{
 				printf("\nEntry found!\n");
-				// TODO: print some details of the entry like the bucket_position and the position in the linked list
+				printf(" - bucket position: %d\n", search_result->bucket_position);
+				printf(" - entries linked list position: %d\n", search_result->entries_linked_list_position);
+				printf(" - key: %d\n", search_result->entry->key);
 			}
 			else
 			{
@@ -85,6 +94,7 @@ int main()
 			break;
 		}
 
+		printf("\n");
 		system("pause");
 	} while (1);
 }
@@ -178,23 +188,27 @@ void show_hash_table(struct hash_table* hash_table)
 	printf("\n");
 }
 
-// TODO: maybe return another struct here or print the data found inside the function itself
-//(maybe it is better to just return a new struct to be able to use this search function in the remove function without printing unnecessary info)
-//or pass a parameter to indicate if we want to print the data or not.
-struct entry_node* search_key_in_hash_table(struct hash_table *hash_table, int key)
+struct search_result* search_key_in_hash_table(struct hash_table* hash_table, int key)
 {
 	const int bucket_position = get_hash_code(key);
-
 	struct entry_node* entry = hash_table->bucket[bucket_position];
 
+	int i = 0;
 	while (entry != NULL)
 	{
 		if (entry->key == key)
 		{
-			return entry;
+			struct search_result* search_result = (struct search_result*)malloc(sizeof(struct search_result));
+
+			search_result->bucket_position = bucket_position;
+			search_result->entries_linked_list_position = i;
+			search_result->entry = entry;
+
+			return search_result;
 		}
 
 		entry = entry->next;
+		i++;
 	}
 
 	return NULL;
