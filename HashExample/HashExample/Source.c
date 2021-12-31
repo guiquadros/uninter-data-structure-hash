@@ -10,16 +10,16 @@ int get_hash_code(int value);
 void insert_in_hash_table(struct hash_table* hash_table, int key, int bucket_position);
 void show_hash_table(struct hash_table* hash_table);
 
-struct hash_linked_list_node
+struct entries_linked_list_node
 {
 	int key;
-	struct hash_linked_list_node *next;
+	struct entries_linked_list_node *next;
 };
 
 struct hash_table
 {
 	int size;
-	struct hash_linked_list_node **bucket;
+	struct entries_linked_list_node **bucket;
 };
 
 int main()
@@ -108,7 +108,7 @@ int get_hash_code(const int value)
 
 void insert_in_hash_table(struct hash_table* hash_table, int key, int bucket_position)
 {
-	struct hash_linked_list_node* entry = (struct hash_linked_list_node*)malloc(sizeof(struct hash_linked_list_node));
+	struct entries_linked_list_node* entry = (struct entries_linked_list_node*)malloc(sizeof(struct entries_linked_list_node));
 	entry->key = key;
 
 	// the new entry's next element is set to be the current first element of that bucket space 
@@ -125,7 +125,7 @@ struct hash_table* create_new_hash_table()
 {
 	struct hash_table *new_hash_table = (struct hash_table*)malloc(sizeof(struct hash_table));
 	new_hash_table->size = BUCKET_SIZE;
-	new_hash_table->bucket = (struct hash_linked_list_node**)malloc(BUCKET_SIZE * sizeof(struct  hash_linked_list_node*));
+	new_hash_table->bucket = (struct entries_linked_list_node**)malloc(BUCKET_SIZE * sizeof(struct  entries_linked_list_node*));
 
 	for (int i = 0; i < BUCKET_SIZE; ++i)
 	{
@@ -141,7 +141,7 @@ void show_hash_table(struct hash_table* hash_table)
 	{
 		printf("\nLinked List of the keys stored in Hash Table's Bucket #%d:\n", i);
 
-		struct hash_linked_list_node* entry_node = hash_table->bucket[i];
+		struct entries_linked_list_node* entry_node = hash_table->bucket[i];
 
 		while (entry_node != NULL)
 		{
