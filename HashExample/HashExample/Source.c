@@ -14,6 +14,7 @@ int get_hash_code(int value);
 void insert_in_hash_table(struct hash_table* hash_table, int key);
 void show_hash_table(struct hash_table* hash_table);
 struct search_result* search_key_in_hash_table(struct hash_table* hash_table, int key);
+int remove_from_hash_table(struct hash_table* hash_table, int key);
 
 // type each node of the linked list that stores the entries associated with a bucket position
 //(each bucket position points to a linked list, this simplifies collision handling)
@@ -31,6 +32,7 @@ struct hash_table
 
 struct search_result
 {
+	struct entry_node* previous_entry;
 	struct entry_node* entry;
 	int bucket_position;
 	int entries_linked_list_position;
@@ -56,7 +58,21 @@ int main()
 			break;
 
 		case 2:
-			//TODO: Remove
+			printf("Inform the key (int) to be removed from the Hash Table: ");
+			int key_to_remove;
+			scanf_s("%d", &key_to_remove);
+			clean_keyboard_buffer();
+
+			const int success = remove_from_hash_table(hash_table, key_to_remove);
+
+			if (success)
+			{
+				printf("%d successfully removed fom the Hash Table!", key_to_remove);
+			}
+			else
+			{
+				printf("Key not found in the Hash Table!");
+			}
 			break;
 
 		case 3:
@@ -74,6 +90,7 @@ int main()
 				printf(" - entries linked list position: %d\n", search_result->entries_linked_list_position);
 				printf(" - key: %d\n", search_result->entry->key);
 
+				// free the allocated memory for the search_result, we don't need it anymore here
 				free(search_result);
 			}
 			else
@@ -196,6 +213,7 @@ struct search_result* search_key_in_hash_table(struct hash_table* hash_table, in
 	struct entry_node* entry = hash_table->bucket[bucket_position];
 
 	int i = 0;
+	struct entry_node* previous = NULL;
 	while (entry != NULL)
 	{
 		if (entry->key == key)
@@ -205,13 +223,43 @@ struct search_result* search_key_in_hash_table(struct hash_table* hash_table, in
 			search_result->bucket_position = bucket_position;
 			search_result->entries_linked_list_position = i;
 			search_result->entry = entry;
+			search_result->previous_entry = previous;
 
 			return search_result;
 		}
 
+		previous = entry;
 		entry = entry->next;
 		i++;
 	}
 
 	return NULL;
+}
+
+int remove_from_hash_table(struct hash_table* hash_table, int key)
+{
+	struct search_result* search_result = search_key_in_hash_table(hash_table, key);
+
+	if (search_result == NULL)
+	{
+		return 0;
+	}
+
+	if (search_result->entries_linked_list_position == 0)
+	{
+		// if we are removing the first position of the linked list we just make the bucket
+		//point to the item next to it (second entry of the linked list stored in that bucket)
+		hash_table->bucket[search_result->bucket_position] = search_result->entry->next;
+	}
+	else
+	{
+		// if we are removing a position in the middle of the linked list:
+		// since this is a simple (not circular) linked list,
+		//we need to get the previous entry and set the next entry of entry to be the next entry of the previous entry
+		search_result->previous_entry->next = search_result->entry->next;
+	}
+
+	free(search_result->entry);
+	free(search_result);
+	return 1;
 }
