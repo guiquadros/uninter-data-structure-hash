@@ -6,28 +6,32 @@
 //#define BUCKET_SIZE 12
 #define BUCKET_SIZE 13
 
+struct entry_node;
 int menu();
 void clean_keyboard_buffer();
 struct hash_table* create_new_hash_table();
 int get_hash_code(int value);
-void insert_in_hash_table(struct hash_table* hash_table, int key, int bucket_position);
+void insert_in_hash_table(struct hash_table* hash_table, int key);
 void show_hash_table(struct hash_table* hash_table);
+struct entry_node* search_key_in_hash_table(struct hash_table* hash_table, int key);
 
-struct entries_linked_list_node
+// type each node of the linked list that stores the entries associated with a bucket position
+//(each bucket position points to a linked list, this simplifies collision handling)
+struct entry_node
 {
 	int key;
-	struct entries_linked_list_node *next;
+	struct entry_node* next;
 };
 
 struct hash_table
 {
 	int size;
-	struct entries_linked_list_node **bucket;
+	struct entry_node** bucket;
 };
 
 int main()
 {
-	struct hash_table *hash_table = create_new_hash_table();
+	struct hash_table* hash_table = create_new_hash_table();
 
 	do
 	{
@@ -36,13 +40,12 @@ int main()
 		switch (option)
 		{
 		case 1:
-			int key;
 			printf("Inform the key (int) to be inserted in the Hash Table: ");
-			scanf_s("%d", &key);
+			int new_key;
+			scanf_s("%d", &new_key);
 			clean_keyboard_buffer();
-
-			int bucket_position = get_hash_code(key);
-			insert_in_hash_table(hash_table, key, bucket_position);
+						
+			insert_in_hash_table(hash_table, new_key);
 			break;
 
 		case 2:
@@ -50,7 +53,22 @@ int main()
 			break;
 
 		case 3:
-			//TODO: Search
+			printf("Inform the key (int) to be searched in the Hash Table: ");
+			int search_key;
+			scanf_s("%d", &search_key);
+			clean_keyboard_buffer();
+
+			struct entry_node* entry = search_key_in_hash_table(hash_table, search_key);
+
+			if (entry != NULL)
+			{
+				printf("\nEntry found!\n");
+				// TODO: print some details of the entry like the bucket_position and the position in the linked list
+			}
+			else
+			{
+				printf("\nEntry NOT found!\n");
+			}
 			break;
 
 		case 4:
@@ -109,9 +127,11 @@ int get_hash_code(const int value)
 	return hash_code;
 }
 
-void insert_in_hash_table(struct hash_table* hash_table, int key, int bucket_position)
+void insert_in_hash_table(struct hash_table* hash_table, int key)
 {
-	struct entries_linked_list_node* entry = (struct entries_linked_list_node*)malloc(sizeof(struct entries_linked_list_node));
+	int bucket_position = get_hash_code(key);
+
+	struct entry_node* entry = (struct entry_node*)malloc(sizeof(struct entry_node));
 	entry->key = key;
 
 	// the new entry's next element is set to be the current first element of that bucket space 
@@ -126,9 +146,9 @@ void insert_in_hash_table(struct hash_table* hash_table, int key, int bucket_pos
 
 struct hash_table* create_new_hash_table()
 {
-	struct hash_table *new_hash_table = (struct hash_table*)malloc(sizeof(struct hash_table));
+	struct hash_table* new_hash_table = (struct hash_table*)malloc(sizeof(struct hash_table));
 	new_hash_table->size = BUCKET_SIZE;
-	new_hash_table->bucket = (struct entries_linked_list_node**)malloc(BUCKET_SIZE * sizeof(struct  entries_linked_list_node*));
+	new_hash_table->bucket = (struct entry_node**)malloc(BUCKET_SIZE * sizeof(struct  entry_node*));
 
 	for (int i = 0; i < BUCKET_SIZE; ++i)
 	{
@@ -144,7 +164,7 @@ void show_hash_table(struct hash_table* hash_table)
 	{
 		printf("\nLinked List of the keys stored in Hash Table's Bucket #%d:\n", i);
 
-		struct entries_linked_list_node* entry_node = hash_table->bucket[i];
+		struct entry_node* entry_node = hash_table->bucket[i];
 
 		while (entry_node != NULL)
 		{
@@ -156,4 +176,26 @@ void show_hash_table(struct hash_table* hash_table)
 	}
 
 	printf("\n");
+}
+
+// TODO: maybe return another struct here or print the data found inside the function itself
+//(maybe it is better to just return a new struct to be able to use this search function in the remove function without printing unnecessary info)
+//or pass a parameter to indicate if we want to print the data or not.
+struct entry_node* search_key_in_hash_table(struct hash_table *hash_table, int key)
+{
+	const int bucket_position = get_hash_code(key);
+
+	struct entry_node* entry = hash_table->bucket[bucket_position];
+
+	while (entry != NULL)
+	{
+		if (entry->key == key)
+		{
+			return entry;
+		}
+
+		entry = entry->next;
+	}
+
+	return NULL;
 }
