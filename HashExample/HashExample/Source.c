@@ -1,7 +1,10 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define BUCKET_SIZE 12
+// to reduce collisions it is better to use prime numbers for the bucket size
+//(the bucket size is used in the hash function that is based on the division method)
+//#define BUCKET_SIZE 12
+#define BUCKET_SIZE 13
 
 int menu();
 void clean_keyboard_buffer();
