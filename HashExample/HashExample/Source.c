@@ -73,6 +73,8 @@ int main()
 				printf(" - bucket position: %d\n", search_result->bucket_position);
 				printf(" - entries linked list position: %d\n", search_result->entries_linked_list_position);
 				printf(" - key: %d\n", search_result->entry->key);
+
+				free(search_result);
 			}
 			else
 			{
