@@ -254,7 +254,7 @@ int remove_from_hash_table(struct hash_table* hash_table, int key)
 	else
 	{
 		// if we are removing a position in the middle of the linked list:
-		// since this is a simple (not circular) linked list,
+		// since this is a simple (not doubly) linked list we don't have a previous pointer with each node,
 		//we need to get the previous entry and set the next entry of entry to be the next entry of the previous entry
 		search_result->previous_entry->next = search_result->entry->next;
 	}
